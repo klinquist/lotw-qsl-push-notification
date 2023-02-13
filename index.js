@@ -11,7 +11,11 @@ let push = new Push({
     token: config.get('pushover_app_token'),
 });
 
-
+let getDateFrom2DaysAgo = () => {
+    var d = new Date();
+    d.setDate(d.getDate() - 2);
+    return d.toISOString().substring(0,10)
+}
 
 let minutes = config.get('check_interval_minutes')
 
@@ -37,8 +41,11 @@ async function asyncForEach(array, callback) {
 
 const login = config.get('lotw_username')
 const password = config.get('lotw_password')
-const url = `https://lotw.arrl.org/lotwuser/lotwreport.adi?login=${login}&password=${password}&qso_query=1&qso_qsl=no&qso_startdate=2000-01-01`
 
+
+const getUrl = (startDate) => {
+    return `https://lotw.arrl.org/lotwuser/lotwreport.adi?login=${login}&password=${password}&qso_query=1&qso_qsl=no&qso_startdate=${startDate}`
+}
 const BLOOM_HASHES = 6;
 
 const log = (msg) => {
@@ -47,10 +54,16 @@ const log = (msg) => {
 }
 
 
-const getList = async () => {
+const getList = async (firstrun) => {
     return new Promise(async (resolve, reject) => {
         let qsls = []
         log('Making HTTP request...')
+        let url;
+        if (firstrun) {
+           url = getUrl('2000-01-01')
+        } else {
+            url = getUrl(getDateFrom2DaysAgo())
+        }
         let result = await axios.get(url, { timeout: 30000 }).catch((err) => {
             log('Error making HTTP request: ' + err)
         })
@@ -147,7 +160,7 @@ const checkForNewQSLs = async () => {
         }
         let list;
         try {
-            list = await getList()
+            list = await getList(firstrun)
         } catch (err) {
             log('Unable to get list: ' + err)
             return resolve()
@@ -180,11 +193,9 @@ const checkForNewQSLs = async () => {
         })
         firstrun = false;
         if (bloomTouched) {
-            await fs.writeFile(config.get('data_file'), JSON.stringify([].slice.call(bloom.buckets)))
-            log(`New QSLs found! Now ${qsl} known QSLs out of a total of ${noqsl+qsl} QSOs. Waiting ${minutes} minutes...`)
-        } else {
-            log(`No new QSLs found. ${qsl} known QSLs out of a total of ${noqsl+qsl} QSOs. Waiting ${minutes} minutes...`)
-        }
+            await fs.writeFile(config.get('data_file'), JSON.stringify([].slice.call(bloom.buckets)))  
+        } 
+        log(`Done processing QSLs. Waiting ${minutes} minutes...`)
         
         return resolve()
     })
