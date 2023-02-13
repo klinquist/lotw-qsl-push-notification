@@ -1,0 +1,8 @@
+{
+    "lotw_username":"PUT_CALLSIGN_HERE",
+    "lotw_password": "PUT_PASSWORD_HERE",
+    "pushover_user_token": "PUT_PUSHOVER_USER_TOKEN_HERE",
+    "pushover_app_token": "PUT_PUSHOVER_APP_TOKEN_HERE",
+    "data_file":"bloom_filter.dat",
+    "check_interval_minutes": 10
+}
