@@ -2,8 +2,7 @@
 
 ![](images/push.jpg)
 
-This script will poll LoTW every 10 minutes and send you a push notification if you get a new confirmation (QSL) from LoTW.
-
+This script will poll LoTW every 2 hours (configurable) and send you a push notification if you get a new confirmation (QSL) from LoTW.
 
 This is a very basic nodejs script.  It requires that you run it full time on a Raspberry Pi or other computer with nodejs installed
 
@@ -19,3 +18,7 @@ It could be easily modified to send text messages or emails...
 4. Run `npm start`
 
 Use something like `pm2` to keep it running!
+
+
+#### Changes:
+2023-02-23: Added *check_previous_days* config.  This will only request the past X days' worth of data from LoTW, reducing their server load.  If someone waits for more than this many days to confirm, you will not receive a push notification.

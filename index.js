@@ -11,9 +11,11 @@ let push = new Push({
     token: config.get('pushover_app_token'),
 });
 
-let getDateFrom2DaysAgo = () => {
+const daysAgo = config.get('check_previous_days')
+
+let getDateFromDaysAgo = () => {
     var d = new Date();
-    d.setDate(d.getDate() - 2);
+    d.setDate(d.getDate() - daysAgo);
     return d.toISOString().substring(0,10)
 }
 
@@ -62,7 +64,7 @@ const getList = async (firstrun) => {
         if (firstrun) {
            url = getUrl('2000-01-01')
         } else {
-            url = getUrl(getDateFrom2DaysAgo())
+            url = getUrl(getDateFromDaysAgo())
         }
         let result = await axios.get(url, { timeout: 30000 }).catch((err) => {
             log('Error making HTTP request: ' + err)
