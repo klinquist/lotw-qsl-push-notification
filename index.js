@@ -11,9 +11,8 @@ let push = new Push({
     token: config.get('pushover_app_token'),
 });
 
-const daysAgo = config.get('check_previous_days')
 
-let getDateFromDaysAgo = () => {
+let getDateFromDaysAgo = (daysAgo) => {
     var d = new Date();
     d.setDate(d.getDate() - daysAgo);
     return d.toISOString().substring(0,10)
@@ -39,8 +38,6 @@ async function asyncForEach(array, callback) {
 }
 
 
-
-
 const login = config.get('lotw_username')
 const password = config.get('lotw_password')
 
@@ -62,9 +59,9 @@ const getList = async (firstrun) => {
         log('Making HTTP request...')
         let url;
         if (firstrun) {
-           url = getUrl('2000-01-01')
+           url = getUrl(getDateFromDaysAgo(365)) //Seed the bloom filter with data from the past year
         } else {
-            url = getUrl(getDateFromDaysAgo())
+            url = getUrl(getDateFromDaysAgo(config.get('check_previous_days')))
         }
         let result = await axios.get(url, { timeout: 30000 }).catch((err) => {
             log('Error making HTTP request: ' + err)
@@ -169,7 +166,9 @@ const checkForNewQSLs = async () => {
         }
         let qsl = 0;
         let noqsl = 0;
-        
+        if (firstrun) {            
+            log(`Not sending push notification for first run. Seeding the bloom filter with ${list.length} QSLs.`)
+        }
         await asyncForEach(list, async(item) => {
             if (item.qsl_rcvd) {
                 qsl++;
@@ -183,9 +182,7 @@ const checkForNewQSLs = async () => {
                         } else {
                             sendPush(`New QSL from ${item.call} on ${item.band} (${item.mode})`)
                         }
-                    } else {
-                        log('Not sending push notification for first run. This is just to get the data file populated.')
-                    }
+                    } 
                     bloomTouched = true
                     bloom.add(itemKey)
                 }
