@@ -166,16 +166,14 @@ const checkForNewQSLs = async () => {
         }
         let qsl = 0;
         let noqsl = 0;
-        if (firstrun) {            
-            log(`Not sending push notification for first run. Seeding the bloom filter with ${list.length} QSLs.`)
-        }
+
         await asyncForEach(list, async(item) => {
             if (item.qsl_rcvd) {
                 qsl++;
                 let itemKey = `${item.call}-${item.timestamp}`
                 if (!bloom.test(itemKey)) {
-                    log('New QSL from ' + item.call)
                     if (!firstrun) { 
+                        log('New QSL from ' + item.call)
                         let country = await checkCountry(item.call)
                         if (country) {
                             sendPush(`New QSL from ${item.call} on ${item.band} (${item.mode}) (${country})`)
@@ -190,6 +188,9 @@ const checkForNewQSLs = async () => {
                 noqsl++;
             }
         })
+        if (firstrun) {
+            log(`Not sending push notification for first run. Seeding the bloom filter with ${list.length} QSLs.`)
+        }
         firstrun = false;
         if (bloomTouched) {
             await fs.writeFile(config.get('data_file'), JSON.stringify([].slice.call(bloom.buckets)))  
