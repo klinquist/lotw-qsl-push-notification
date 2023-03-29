@@ -2,7 +2,7 @@
 
 ![](images/push.jpg)
 
-This script will poll LoTW every 2 hours (configurable) and send you a push notification if you get a new confirmation (QSL) from LoTW.
+This script will poll LoTW every day (configurable) and send you a push notification if you get a new confirmation (QSL) from LoTW.
 
 This is a very basic nodejs script.  It requires that you run it full time on a Raspberry Pi or other computer with nodejs installed
 
